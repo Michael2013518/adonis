@@ -21,6 +21,7 @@ Route.on('/').render('welcome')
 /**
  * 路由Route
  */
-Route.get('/hello', ({ request }) => {
+/*Route.get('/hello', ({ request }) => {
   return `hello ~ ${request.input('name')}`
-})
+})*/
+Route.get('/hello', 'HelloController.render')
