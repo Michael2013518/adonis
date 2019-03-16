@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    {{ style('css/main') }}
+    {{ script('js/main')}}
+    <title>{{ pageTitle || 'michael'}}</title>
+</head>
+<body style="background:url({{assetsUrl('splash.png')}})">
+    <div>
+    url: <small>{{ request.url() }}</small><br>
+    originalUrl: <small>{{ request.originalUrl() }}</small><br>
+    method: <small>{{ request.method() }}</small><br>
+    protocol: <small>{{ request.protocol()}}</small>
+    </div>
+    <div class="container">
+        <div class="header">
+            @section('header')
+              <small> There is header section </small>
+            @endsection
+        </div>
+        <div class="content">
+            @section('content')
+              <small> There is content section </small>
+            @endsection
+        </div>
+        @include('partials.footer')
+    </div>
+</body>
+</html>
