@@ -1,0 +1,16 @@
+@layout('layouts.main')
+
+@section('content')
+
+  <div class="container">
+  <h1 class="mt-5 mb-4">{{ post.title }}</h1>
+  <div>
+    {{ post.content }}
+  </div>
+  </div>
+  <ul class="nav justify-content-end fixed-bottom pd-4">
+    <li class="nav-item">
+    <button class="nav-link btn btn-link" id="delete" data-id="{{ post.id }}" data-csrf="{{ csrfToken }}">Delete</button>
+    </li>
+  </ul>
+@endsection
