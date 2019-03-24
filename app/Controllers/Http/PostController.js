@@ -1,6 +1,7 @@
 'use strict'
 
 const Database = use('Database')
+const Post = use('App/Models/Post')
 /** @typedef {import('@adonisjs/framework/src/Request')} Request */
 /** @typedef {import('@adonisjs/framework/src/Response')} Response */
 /** @typedef {import('@adonisjs/framework/src/View')} View */
@@ -18,7 +19,9 @@ class PostController {
    * @param {Response} ctx.response
    * @param {View} ctx.view
    */
-  async index ({ request, response, view }) {
+  async index ({ view }) {
+    const posts = await Post.all()
+    return view.render('post.index', { posts: posts.toJSON()})
   }
 
   /**
@@ -44,8 +47,9 @@ class PostController {
    */
   async store ({ request, response }) {
     const newPost = request.only(['title','content'])
-    const postID = await Database.insert(newPost).into('posts')
-    return response.redirect(`/posts/${ postID[0] }`)
+    //const postID = await Database.insert(newPost).into('posts')
+    const post = await Post.create(newPost)
+    return response.redirect(`/posts/${ post.id }`)
   }
 
   /**
@@ -58,10 +62,11 @@ class PostController {
    * @param {View} ctx.view
    */
   async show ({ params, view }) {
-    const post = await Database
-      .from('posts')
-      .where('id',params.id)
-      .first()
+    // const post = await Database
+    //   .from('posts')
+    //   .where('id',params.id)
+    //   .first()
+    const post = await Post.find(params.id)
       return view.render('post.show', { post })
   }
 
@@ -75,11 +80,12 @@ class PostController {
    * @param {View} ctx.view
    */
   async edit ({ params, request, response, view }) {
-    const post = await Database
-     .from('posts')
-     .where('id',params.id)
-     .first()
-     return view.render('post.edit', { post })
+    // const post = await Database
+    //  .from('posts')
+    //  .where('id',params.id)
+    //  .first()
+     const post = await Post.findOrFail(params.id)
+     return view.render('post.edit', { post: post.toJSON() })
   }
 
   /**
@@ -92,7 +98,10 @@ class PostController {
    */
   async update ({ params, request, response }) {
     const updatePost = request.only(['title','content'])
-    await Database.table('posts').where('id',params.id).update(updatePost)
+    //await Database.table('posts').where('id',params.id).update(updatePost)
+    const post = await Post.findOrFail(params.id)
+    post.merge(updatePost)
+    post.save()
   }
 
   /**
@@ -104,10 +113,12 @@ class PostController {
    * @param {Response} ctx.response
    */
   async destroy ({ params, request, response }) {
-    await Database
-    .table('posts')
-    .where('id',params.id)
-    .delete()
+    // await Database
+    // .table('posts')
+    // .where('id',params.id)
+    // .delete()
+    const post = await Post.find(params.id)
+    post.delete()
     return 'success'
   }
 }
