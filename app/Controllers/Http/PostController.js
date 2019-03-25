@@ -2,6 +2,8 @@
 
 const Database = use('Database')
 const Post = use('App/Models/Post')
+const User = use('App/Models/User')
+const Tag = use('App/Models/Tag')
 /** @typedef {import('@adonisjs/framework/src/Request')} Request */
 /** @typedef {import('@adonisjs/framework/src/Response')} Response */
 /** @typedef {import('@adonisjs/framework/src/View')} View */
@@ -20,7 +22,15 @@ class PostController {
    * @param {View} ctx.view
    */
   async index ({ view }) {
-    const posts = await Post.all()
+    //const posts = await Post.all()
+    const posts = await Post
+      .query()
+      .with('user', (builder) => {
+        builder.select('id', 'username')
+      })
+      .with('user.profile')
+      .fetch()
+      console.log(posts.toJSON())
     return view.render('post.index', { posts: posts.toJSON()})
   }
 
@@ -34,7 +44,9 @@ class PostController {
    * @param {View} ctx.view
    */
   async create ({ view }) {
-    return view.render('post.create')
+    const users = await User.all()
+    const tags = await Tag.all()
+    return view.render('post.create', { users: users.toJSON(), tags: tags.toJSON() })
   }
 
   /**
@@ -47,8 +59,16 @@ class PostController {
    */
   async store ({ request, response }) {
     const newPost = request.only(['title','content'])
+    const tags = request.input('tags')
     //const postID = await Database.insert(newPost).into('posts')
-    const post = await Post.create(newPost)
+    const user = await User.find(request.input('user_id'))
+    const post = await user
+      .posts()
+      .create(newPost)
+    await post
+      .tags()
+      .attach(tags)
+    //const post = await Post.create(newPost)
     return response.redirect(`/posts/${ post.id }`)
   }
 
@@ -67,7 +87,11 @@ class PostController {
     //   .where('id',params.id)
     //   .first()
     const post = await Post.find(params.id)
-      return view.render('post.show', { post })
+    const tags = await post
+      .tags()
+      .select('id','title')
+      .fetch()
+      return view.render('post.show', { post, tags: tags.toJSON() })
   }
 
   /**

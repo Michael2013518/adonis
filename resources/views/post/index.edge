@@ -5,6 +5,26 @@
       @each(post in posts)
       <h3 class="mt-5 mb-4">{{ post.title}}</h3>
       <div>{{ post.content }}</div>
+      @if(post.user.username)
+      <div class="text-muted mt-2">
+      <a href="/users/{{ post.user.id }}" class="text-muted">{{ post.user.username }}</a>
+        <span class="px-2">
+        <a href="https://github.com/{{post.user.profile.github}}" class="text-muted">
+          <i class="fab fa-github"></i>
+        </a>
+        </span>
+      </div>
+      @else 
+      <div class="text-muted mt-2">
+        <a href="/users/{{ post.user.id }}" class="text-muted">管理员</a>
+        <span class="px-2">
+          <a href="https://github.com/zdong2011" class="text-muted">
+            <i class="fab fa-github"></i>
+          </a>
+          </span>
+      </div>
+      @endif
+      
       @endeach
   </div>
 @endsection

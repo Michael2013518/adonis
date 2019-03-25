@@ -7,6 +7,18 @@
   <div>
     {{ post.content }}
   </div>
+  @if(tags)
+    
+    <div class="my-y">
+      <span class="text-muted font-weight-light">标签：</span>
+      @each(tag in tags)
+    <a href="/tags/{{ tag.id}}" class="badge badge-pill badge-secondary px-2 py-1">
+    {{ tag.title }}
+    </a>
+      @endeach
+    </div>
+
+  @endif
   </div>
   <ul class="nav justify-content-end fixed-bottom pd-4">
     <li class="nav-item">
