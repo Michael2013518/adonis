@@ -17,6 +17,9 @@
 const Route = use('Route')
 const Profile = use('App/Models/Profile')
 
+Route.get('register', 'UserController.create')
+     .as('signup')
+Route.get('users/create', ({ response }) => response.route('signup'))
 Route.on('/').render('welcome')
 
 Route.resource('posts','PostController')
