@@ -11,6 +11,9 @@
       },
       success: (response) => {
           console.log(response)
+          if (response == 'success') {
+            window.location.href='/posts'
+          }
       }
     })
   })
