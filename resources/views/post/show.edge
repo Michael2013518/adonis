@@ -22,7 +22,10 @@
   </div>
   <ul class="nav justify-content-end fixed-bottom pd-4">
     <li class="nav-item">
-    <button class="nav-link btn btn-link" id="delete" data-id="{{ post.id }}" data-csrf="{{ csrfToken }}">Delete</button>
+    <a href="{{ route('PostController.edit', { id: post.id }) }}" class="nav-link btn btn-link">编辑</a>
+    </li>
+    <li class="nav-item">
+    <button class="nav-link btn btn-link" id="delete" data-id="{{ post.id }}" data-csrf="{{ csrfToken }}">删除</button>
     </li>
   </ul>
 @endsection
