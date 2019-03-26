@@ -4,6 +4,8 @@ const Database = use('Database')
 const Post = use('App/Models/Post')
 const User = use('App/Models/User')
 const Tag = use('App/Models/Tag')
+const { validateAll } = use('Validator')
+const Route = use('Route')
 /** @typedef {import('@adonisjs/framework/src/Request')} Request */
 /** @typedef {import('@adonisjs/framework/src/Response')} Response */
 /** @typedef {import('@adonisjs/framework/src/View')} View */
@@ -57,7 +59,18 @@ class PostController {
    * @param {Request} ctx.request
    * @param {Response} ctx.response
    */
-  async store ({ request, response }) {
+  async store ({ request, response, session }) {
+    const rules = {
+      title: 'required',
+      content: 'required'
+    }
+    const validation = await validateAll(request.all(), rules)
+    if (validation.fails()) {
+      session
+        .withErrors(validation.messages())
+        .flashAll()
+        return response.redirect('back')
+    }
     const newPost = request.only(['title','content'])
     const tags = request.input('tags')
     //const postID = await Database.insert(newPost).into('posts')
@@ -108,8 +121,31 @@ class PostController {
     //  .from('posts')
     //  .where('id',params.id)
     //  .first()
-     const post = await Post.findOrFail(params.id)
-     return view.render('post.edit', { post: post.toJSON() })
+     const _post = await Post.findOrFail(params.id)
+     const _users = await User.all()
+     const users = _users.toJSON()
+     const _tags = await Tag.all()
+     const tags = _tags.toJSON()
+     await _post.load('tags')
+     const post = _post.toJSON()
+     const postTagIds = post.tags.map((tag) => tag.id )
+     const tagItems = tags.map( tag => {
+       if (postTagIds.includes(tag.id)) {
+         tag.checked = true
+       }
+       return tag
+     })
+     const userItem = users.map((user) => {
+       if (user.id == post.user_id) {
+         user.checked = true
+       }
+       return user
+     })
+     return view.render('post.edit', { 
+       post,
+       users: userItem,
+       tags: tagItems
+      })
   }
 
   /**
@@ -120,12 +156,24 @@ class PostController {
    * @param {Request} ctx.request
    * @param {Response} ctx.response
    */
-  async update ({ params, request, response }) {
-    const updatePost = request.only(['title','content'])
+  async update ({ params, request, response, session }) {
+    const { title, content, user_id, tags } = request.all()
+    //const updatePost = request.only(['title','content'])
     //await Database.table('posts').where('id',params.id).update(updatePost)
     const post = await Post.findOrFail(params.id)
-    post.merge(updatePost)
-    post.save()
+    post.merge({ title, content })
+    await post.save()
+
+    const user = await User.find(user_id)
+    await post.user().associate(user)
+
+    await post.tags().sync(tags)
+
+    session.flash({
+      type: 'primary',
+      message:`Post updated <a href="${ Route.url('PostController.show', { id: post.id }) }" class="alert-link">浏览提交</a>`
+    })
+    return response.redirect('back')
   }
 
   /**
@@ -141,8 +189,13 @@ class PostController {
     // .table('posts')
     // .where('id',params.id)
     // .delete()
-    const post = await Post.find(params.id)
-    post.delete()
+    try {
+      const post = await Post.find(params.id)
+      await post.tags().detach()
+      await post.delete()
+    } catch (error) {
+      console.log(error)
+    }
     return 'success'
   }
 }
