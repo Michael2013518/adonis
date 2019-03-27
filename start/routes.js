@@ -28,6 +28,7 @@ Route.post('logout', 'AuthController.logout').as('logout')
 
 Route.get('upload', 'FileController.create').as('upload')
 Route.resource('files', 'FileController')
+Route.get('files/:id/download', 'FileController.download').as('files.download')
 
 Route.resource('posts','PostController')
 Route.resource('users', 'UserController')
