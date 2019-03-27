@@ -3,6 +3,8 @@
 const Helpers = use('Helpers')
 const File = use('App/Models/File')
 const filesize = use('filesize')
+const Drive = use('Drive')
+const Route = use('Route')
 /** @typedef {import('@adonisjs/framework/src/Request')} Request */
 /** @typedef {import('@adonisjs/framework/src/Response')} Response */
 /** @typedef {import('@adonisjs/framework/src/View')} View */
@@ -11,6 +13,11 @@ const filesize = use('filesize')
  * Resourceful controller for interacting with files
  */
 class FileController {
+  async download ({ params, response }) {
+    const file = await File.find(params.id)
+    const filePath = `${ Helpers.publicPath('uploads')}/${ file.file_name }`
+    return response.attachment(filePath, file.client_name)
+  }
   /**
    * Show a list of all files.
    * GET files
@@ -105,6 +112,8 @@ class FileController {
    * @param {View} ctx.view
    */
   async edit ({ params, request, response, view }) {
+    const file = await File.find(params.id)
+    return view.render('file.edit', { file })
   }
 
   /**
@@ -115,7 +124,30 @@ class FileController {
    * @param {Request} ctx.request
    * @param {Response} ctx.response
    */
-  async update ({ params, request, response }) {
+  async update ({ params, request, response, session }) {
+    const fileData = await File.find(params.id)
+    const { client_name, file_name } = request.all()
+    if (file_name !== fileData.file_name) {
+      try {
+        const basePath = Helpers.publicPath('uploads')
+        const originalFilePath = `${ basePath }/${ fileData.file_name }`
+        const filePath = `${ basePath }/${ file_name }`
+        await Drive.move(originalFilePath, filePath)
+      } catch (error) {
+        session.flash({
+          type: 'warning',
+          message: error.message
+        })
+        return response.redirect('back')
+      }
+    }
+    fileData.merge({ client_name, file_name })
+    await fileData.save()
+    session.flash({
+      type:'success',
+      message: 'Successfuly updated'
+    })
+    return response.redirect('back')
   }
 
   /**
@@ -126,7 +158,24 @@ class FileController {
    * @param {Request} ctx.request
    * @param {Response} ctx.response
    */
-  async destroy ({ params, request, response }) {
+  async destroy ({ params, response, session }) {
+    try {
+      const fileData = await File.findOrFail(params.id)
+      const filePath = `${ Helpers.publicPath('uploads')}/${fileData.file_name}`
+      await Drive.delete(filePath)
+      await fileData.delete()
+      session.flash({
+        type: 'success',
+        message: `<small>${ fileData.client_name }</small> Successfully deleted.`
+      })
+      return response.redirect(Route.url('files.index'))
+    } catch (error) {
+      session.flash({
+        type: 'waring',
+        message: error.message
+      })
+      return response.redirect('back')
+    }
   }
 }
 
