@@ -26,6 +26,9 @@ Route.get('login', 'AuthController.login').as('login')
 Route.post('auth', 'AuthController.auth').as('auth')
 Route.post('logout', 'AuthController.logout').as('logout')
 
+Route.get('upload', 'FileController.create').as('upload')
+Route.resource('files', 'FileController')
+
 Route.resource('posts','PostController')
 Route.resource('users', 'UserController')
 Route.get('/profiles/:id', async ({ params }) => {
