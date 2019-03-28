@@ -29,6 +29,7 @@ class PostController {
     const perPage = 5
     const posts = await Post
       .query()
+      .orderBy('updated_at', 'desc')
       .with('user', (builder) => {
         builder.select('id', 'username')
       })
