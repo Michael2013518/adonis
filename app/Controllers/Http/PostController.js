@@ -23,17 +23,19 @@ class PostController {
    * @param {Response} ctx.response
    * @param {View} ctx.view
    */
-  async index ({ view }) {
+  async index ({ view, request }) {
     //const posts = await Post.all()
+    const page = request.input('page')
+    const perPage = 5
     const posts = await Post
       .query()
       .with('user', (builder) => {
         builder.select('id', 'username')
       })
       .with('user.profile')
-      .fetch()
-      console.log(posts.toJSON())
-    return view.render('post.index', { posts: posts.toJSON()})
+      .paginate(page, perPage)
+      //console.log(posts.toJSON())
+    return view.render('post.index', { ...posts.toJSON() })
   }
 
   /**
