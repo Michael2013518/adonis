@@ -69,17 +69,17 @@ class PostController {
    * @param {Response} ctx.response
    */
   async store ({ request, response, session, auth }) {
-    const rules = {
-      title: 'required',
-      content: 'required'
-    }
-    const validation = await validateAll(request.all(), rules)
-    if (validation.fails()) {
-      session
-        .withErrors(validation.messages())
-        .flashAll()
-        return response.redirect('back')
-    }
+    // const rules = {
+    //   title: 'required',
+    //   content: 'required'
+    // }
+    // const validation = await validateAll(request.all(), rules)
+    // if (validation.fails()) {
+    //   session
+    //     .withErrors(validation.messages())
+    //     .flashAll()
+    //     return response.redirect('back')
+    // }
     const newPost = request.only(['title','content'])
     const tags = request.input('tags')
     //const postID = await Database.insert(newPost).into('posts')
