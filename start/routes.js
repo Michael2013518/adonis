@@ -35,7 +35,24 @@ Route.resource('posts','PostController')
   [['create', 'store', 'edit', 'update', 'destroy'],['auth']],
   [['update', 'destroy', 'edit'],['own:post']]
 ]))
-Route.resource('users', 'UserController')
+.validator(new Map([
+  [['posts.store', 'posts.update'], ['StorePost']]
+]))
+
+Route.group(() => {
+  Route.get('profile', 'ProfileController.edit').as('profile.edit')
+  Route.post('profile', 'ProfileController.update').as('profile.update').validator('UpdateProfile')
+  Route.get('password', 'PasswordController.edit').as('password.edit')
+  Route.post('password', 'PasswordController.update').as('password.update').validator('UpdatePassword')
+})
+.prefix('settings')
+.middleware(['auth'])
+
+Route
+  .resource('users', 'UserController')
+  .validator(new Map([
+    [['users.store'], ['StoreUser']]
+  ]))
 Route.get('/profiles/:id', async ({ params }) => {
   const profile = await Profile.find(params.id)
   const user = await profile
