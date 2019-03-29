@@ -1,14 +1,7 @@
 @layout('layouts.main')
 
 @section('content')
-  <div class="container">
     <h3 class="mt-5 mb-4">编辑表单</h3>
-    @if(flashMessage('message'))
-     @!component('components.alert', {
-       type: [flashMessage('type')],
-       message: [flashMessage('message')]
-     }) 
-    @endif
   <form action="/posts/{{ post.id }}?_method=PUT" method="POST">
         @!component('components.form.input', {
           name: 'title',
@@ -48,5 +41,4 @@
         {{ csrfField() }}
         <button class="btn btn-primary" type="submit">提交编辑</button>
       </form>
-  </div>
 @endsection
