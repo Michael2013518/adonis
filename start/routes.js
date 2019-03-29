@@ -31,6 +31,10 @@ Route.resource('files', 'FileController')
 Route.get('files/:id/download', 'FileController.download').as('files.download')
 
 Route.resource('posts','PostController')
+  .middleware(new Map([
+  [['create', 'store', 'edit', 'update', 'destroy'],['auth']],
+  [['update', 'destroy', 'edit'],['own:post']]
+]))
 Route.resource('users', 'UserController')
 Route.get('/profiles/:id', async ({ params }) => {
   const profile = await Profile.find(params.id)
