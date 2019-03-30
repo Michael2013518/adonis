@@ -65,4 +65,7 @@ Route.get('/profiles/:id', async ({ params }) => {
   }
 })
 Route.get('demo/antl', 'AntlDemoController.demo')
+Route.get('demo/ws', ({ view }) => {
+  return view.render('demo.ws')
+})
 Route.resource('tags', 'TagController')
