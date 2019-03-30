@@ -20,10 +20,13 @@ const Profile = use('App/Models/Profile')
 Route.get('register', 'UserController.create')
      .as('signup')
 Route.get('users/create', ({ response }) => response.route('signup'))
-Route.on('/').render('welcome')
+//Route.on('/').render('welcome')
+Route.get('/', ({ response }) => {
+  return response.route('posts.index')
+}).as('index')
 
 Route.get('login', 'AuthController.login').as('login')
-Route.post('auth', 'AuthController.auth').as('auth')
+Route.post('auth', 'AuthController.auth').as('auth').validator('LoginUser')
 Route.post('logout', 'AuthController.logout').as('logout')
 
 Route.get('upload', 'FileController.create').as('upload')
