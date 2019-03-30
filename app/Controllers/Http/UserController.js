@@ -43,18 +43,18 @@ class UserController {
    * @param {Response} ctx.response
    */
   async store ({ request, response, session }) {
-    const rules = {
-      username: 'required|unique:users',
-      email: 'required|email|unique:users',
-      password: 'required|min:6|max:30'
-    }
-    const validation = await validateAll(request.all(), rules)
-    if (validation.fails()) {
-      session
-        .withErrors(validation.messages())
-        .flashAll()
-      return response.redirect('back')
-    }
+    // const rules = {
+    //   username: 'required|unique:users',
+    //   email: 'required|email|unique:users',
+    //   password: 'required|min:6|max:30'
+    // }
+    // const validation = await validateAll(request.all(), rules)
+    // if (validation.fails()) {
+    //   session
+    //     .withErrors(validation.messages())
+    //     .flashAll()
+    //   return response.redirect('back')
+    // }
     const newUser = request.only(['username','email','password'])
     const user = await User.create(newUser)
 
@@ -70,15 +70,23 @@ class UserController {
    * @param {Response} ctx.response
    * @param {View} ctx.view
    */
-  async show ({ params, view }) {
+  async show ({ params, view, request }) {
+    const pageNumber = request.input('page',1)
+    const pageSize = 10
     const user = await User.find(params.id)
 
+    const posts = await user
+      .posts()
+      .orderBy('updated_at', 'desc')
+      .with('user')
+      .paginate(pageNumber, pageSize)
+
     //await user.loadMany(['posts','profile'])
-    await user.loadMany({
-      posts: builder => builder.select('id','title','content'),
-      profile: builder => builder.select('github')
-    })
-    return view.render('user.show', { user: user.toJSON() })
+    // await user.loadMany({
+    //   posts: builder => builder.select('id','title','content'),
+    //   profile: builder => builder.select('github')
+    // })
+    return view.render('user.show', { user: user.toJSON(), ...posts.toJSON() })
     // const { username, email } = user.toJSON()
     // const profile = await user
     // .profile()

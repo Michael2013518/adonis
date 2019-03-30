@@ -52,13 +52,16 @@ class TagController {
    * @param {Response} ctx.response
    * @param {View} ctx.view
    */
-  async show ({ params, view }) {
+  async show ({ params, view, request }) {
+    const pageNumber = request.input('page', 1)
+    const pageSize = 10
     const tag = await Tag.find(params.id)
     const posts = await tag
       .posts()
-      .select('id','title','content')
-      .fetch()
-    return view.render('tag.show', { tag, posts: posts.toJSON() })
+      .orderBy('updated_at','desc')
+      .with('user')
+      .paginate(pageNumber, pageSize)
+    return view.render('tag.show', { tag, ...posts.toJSON() })
   }
 
   /**

@@ -20,10 +20,13 @@ const Profile = use('App/Models/Profile')
 Route.get('register', 'UserController.create')
      .as('signup')
 Route.get('users/create', ({ response }) => response.route('signup'))
-Route.on('/').render('welcome')
+//Route.on('/').render('welcome')
+Route.get('/', ({ response }) => {
+  return response.route('posts.index')
+}).as('index')
 
 Route.get('login', 'AuthController.login').as('login')
-Route.post('auth', 'AuthController.auth').as('auth')
+Route.post('auth', 'AuthController.auth').as('auth').validator('LoginUser')
 Route.post('logout', 'AuthController.logout').as('logout')
 
 Route.get('upload', 'FileController.create').as('upload')
@@ -31,7 +34,28 @@ Route.resource('files', 'FileController')
 Route.get('files/:id/download', 'FileController.download').as('files.download')
 
 Route.resource('posts','PostController')
-Route.resource('users', 'UserController')
+  .middleware(new Map([
+  [['create', 'store', 'edit', 'update', 'destroy'],['auth']],
+  [['update', 'destroy', 'edit'],['own:post']]
+]))
+.validator(new Map([
+  [['posts.store', 'posts.update'], ['StorePost']]
+]))
+
+Route.group(() => {
+  Route.get('profile', 'ProfileController.edit').as('profile.edit')
+  Route.post('profile', 'ProfileController.update').as('profile.update').validator('UpdateProfile')
+  Route.get('password', 'PasswordController.edit').as('password.edit')
+  Route.post('password', 'PasswordController.update').as('password.update').validator('UpdatePassword')
+})
+.prefix('settings')
+.middleware(['auth'])
+
+Route
+  .resource('users', 'UserController')
+  .validator(new Map([
+    [['users.store'], ['StoreUser']]
+  ]))
 Route.get('/profiles/:id', async ({ params }) => {
   const profile = await Profile.find(params.id)
   const user = await profile
@@ -42,5 +66,9 @@ Route.get('/profiles/:id', async ({ params }) => {
     profile,
     user
   }
+})
+Route.get('demo/antl', 'AntlDemoController.demo')
+Route.get('demo/ws', ({ view }) => {
+  return view.render('demo.ws')
 })
 Route.resource('tags', 'TagController')
